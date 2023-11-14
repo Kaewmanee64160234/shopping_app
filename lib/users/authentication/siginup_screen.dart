@@ -1,7 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'dart:convert';
 
+import 'package:cloht_app/model/User.dart';
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
+import 'package:http/http.dart';
+import '../../api_connection/api_connection.dart';
 import 'login_screen.dart';
+import 'package:http/http.dart' as http;
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -18,6 +24,46 @@ class _SignUpScreenState extends State<SignUpScreen> {
     var emailController = TextEditingController();
     var passwordController = TextEditingController();
     var isObsecure = true.obs;
+    registerUserAndSave() async {
+      User newUser = User(1, nameController.text.trim(),
+          emailController.text.trim(), passwordController.text.trim());
+      try {
+        var res =
+            await http.post(Uri.parse(API.signUp), body: newUser.toJson());
+        if (res.statusCode == 200) {
+          var resBody = jsonDecode(res.body);
+          if (resBody["success"] == true) {
+            Fluttertoast.showToast(msg: "Sign up success");
+            Get.to(LoginScreen());
+          } else {
+            Fluttertoast.showToast(msg: "Sign up failed");
+          }
+        }
+      } catch (e) {
+        Fluttertoast.showToast(msg: "Sign up failed");
+      }
+    }
+
+    validateUserEmail() async {
+      try {
+        var res = await http.post(Uri.parse(API.checkEmail), body: {
+          "user_email": emailController.text.trim(),
+        });
+        print(Uri.parse(API.checkEmail));
+        if (res.statusCode == 200) {
+          print("pass");
+          var resBody = jsonDecode(res.body);
+          if (resBody["emailFound"] == true) {
+            Fluttertoast.showToast(msg: "Email already exist. Try another one");
+          } else {
+            registerUserAndSave();
+          }
+        }
+      } catch (e) {
+        print(e);
+      }
+    }
+
     return Scaffold(
         backgroundColor: Colors.black,
         body: LayoutBuilder(builder: (context, cons) {
@@ -211,7 +257,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 child: InkWell(
                                   onTap: () {
                                     if (formKey.currentState!.validate()) {
-                                      print("Validated");
+                                      print("validated");
+                                      validateUserEmail();
                                     }
                                   },
                                   child: Container(
