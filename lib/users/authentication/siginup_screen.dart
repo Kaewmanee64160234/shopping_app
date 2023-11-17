@@ -36,11 +36,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
             Fluttertoast.showToast(msg: "Sign up success");
             Get.to(LoginScreen());
           } else {
-            Fluttertoast.showToast(msg: "Sign up failed");
+            Fluttertoast.showToast(msg: "Error occurred while");
           }
         }
       } catch (e) {
-        Fluttertoast.showToast(msg: "Sign up failed");
+        print(e);
+        Fluttertoast.showToast(msg: e.toString());
       }
     }
 
